@@ -5,13 +5,33 @@ include 'config.php';
 
 if(isset($_POST['login']))
 {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    $sql = "SELECT * FROM users
-            WHERE username='$username'";
+    if(empty($username))
+    {
+        die("Username is required");
+    }
 
-    $result = mysqli_query($conn,$sql);
+    if(empty($password))
+    {
+        die("Password is required");
+    }
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT * FROM users WHERE username=?"
+    );
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "s",
+        $username
+    );
+
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
 
     $user = mysqli_fetch_assoc($result);
 
@@ -20,9 +40,11 @@ if(isset($_POST['login']))
        $password,
        $user['password']))
     {
-        $_SESSION['user']=$username;
+        $_SESSION['user'] = $username;
+        $_SESSION['role'] = $user['role'];
 
         header("Location:index.php");
+        exit();
     }
     else
     {
@@ -34,10 +56,14 @@ if(isset($_POST['login']))
 <form method="POST">
 
 Username:
-<input type="text" name="username">
+<input type="text" name="username" required>
+
+<br><br>
 
 Password:
-<input type="password" name="password">
+<input type="password" name="password" required>
+
+<br><br>
 
 <button name="login">
 Login

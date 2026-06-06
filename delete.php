@@ -1,15 +1,22 @@
 <?php
-
+include 'admin_check.php';
 include 'config.php';
 
 $id = $_GET['id'];
 
-mysqli_query(
-$conn,
-"DELETE FROM posts
-WHERE id=$id"
+$stmt = mysqli_prepare(
+    $conn,
+    "DELETE FROM posts WHERE id=?"
 );
 
-header("Location:index.php");
+mysqli_stmt_bind_param(
+    $stmt,
+    "i",
+    $id
+);
 
+mysqli_stmt_execute($stmt);
+
+header("Location:index.php");
+exit();
 ?>
